@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mapa Bíblico</title>
+<style>
+:root{--bg:#f7f7fb;--card:#fff;--text:#182033;--muted:#667085;--line:#e5e7eb;--accent:#6d5dfc;--accent2:#eeecff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line);padding:18px 16px;position:sticky;top:0;z-index:5}
+.wrap{max-width:1050px;margin:auto}.head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+h1{font-size:25px;margin:0}.sub{color:var(--muted);font-size:13px;margin:4px 0 0}
+main{padding:18px 16px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+input,select,textarea,button{font:inherit}input,select,textarea{border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:#fff;color:var(--text)}
+.search{flex:1;min-width:220px}button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 13px;cursor:pointer;font-weight:650}button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.layout{display:grid;grid-template-columns:1.35fr .8fr;gap:14px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px}
+.titlebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}h2{font-size:16px;margin:0}.count{font-size:12px;color:var(--muted)}
+.timeline{position:relative;padding-left:24px}.timeline:before{content:"";position:absolute;left:8px;top:5px;bottom:5px;width:2px;background:#e2e4eb}
+.event{position:relative;margin-bottom:12px}.event:before{content:"";position:absolute;left:-21px;top:19px;width:9px;height:9px;background:#8b83ff;border:3px solid #f7f7fb;border-radius:50%}
+.card{border:1px solid var(--line);border-radius:13px;padding:13px;background:#fff;cursor:pointer}.card:hover{border-color:#bdb7ff}
+.date{font-size:12px;color:var(--muted);font-weight:700}.etitle{font-weight:750;margin:3px 0}.refs{font-size:13px;color:#475467}.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.tag{font-size:11px;background:#f2f4f7;border-radius:999px;padding:4px 7px}
+.people{display:grid;grid-template-columns:1fr 1fr;gap:8px}.person{text-align:left}.person small{display:block;color:var(--muted);font-weight:400;margin-top:3px}
+.detail h3{margin:0 0 3px;font-size:19px}.meta{font-size:12px;color:var(--muted)}.section{border-top:1px solid var(--line);margin-top:13px;padding-top:11px}.detail p{line-height:1.55;font-size:14px;color:#344054}
+.empty{text-align:center;color:var(--muted);padding:28px 8px}
+.modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:16px;z-index:20}.modal.open{display:flex}.box{background:#fff;border-radius:18px;padding:18px;max-width:680px;width:100%;max-height:92vh;overflow:auto}.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}label{font-size:12px;font-weight:700;display:block;margin-bottom:5px}textarea{width:100%;min-height:90px}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.status{font-size:12px;color:var(--muted);margin-top:7px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.form{grid-template-columns:1fr}.full{grid-column:auto}.people{grid-template-columns:1fr 1fr}header{position:static}}
+</style>
+</head>
+<body>
+<header><div class="wrap head"><div><h1>🗺️ Mapa Bíblico</h1><div class="sub">Linha do tempo colaborativa do grupo de oração</div></div><button class="primary" id="add">＋ Adicionar estudo</button></div></header>
+<main class="wrap">
+<div class="toolbar">
+<input id="search" class="search" placeholder="Buscar passagem, pessoa, tema ou contexto">
+<select id="period"><option value="all">Todos os períodos</option><option>Patriarcas</option><option>Êxodo</option><option>Juízes</option><option>Monarquia</option><option>Exílio</option><option>Novo Testamento</option></select>
+<button id="timeline" class="primary">Linha do tempo</button><button id="people">Personagens</button>
+</div>
+<div class="layout">
+<section class="panel"><div class="titlebar"><h2 id="mainTitle">Linha do tempo</h2><span class="count" id="count"></span></div><div id="main"></div></section>
+<aside class="panel"><div class="titlebar"><h2>🔎 Explorar</h2></div><div id="side"></div></aside>
+</div>
+<div class="status" id="status">Conectando ao banco…</div>
+</main>
+
+<div class="modal" id="modal"><div class="box">
+<div class="titlebar"><h2>Novo estudo</h2><button id="close">✕</button></div>
+<form id="form"><div class="form">
+<div class="full"><label>Título</label><input id="fTitle" required placeholder="Ex.: José é vendido pelos irmãos"></div>
+<div><label>Data/período</label><input id="fDate" placeholder="Ex.: ~1900 a.C."></div>
+<div><label>Período</label><select id="fPeriod"><option>Patriarcas</option><option>Êxodo</option><option>Juízes</option><option>Monarquia</option><option>Exílio</option><option>Novo Testamento</option></select></div>
+<div><label>Passagem</label><input id="fRefs" placeholder="Gênesis 37:1–36"></div>
+<div><label>Personagens</label><input id="fPeople" placeholder="José, Jacó, Judá"></div>
+<div><label>Local</label><input id="fPlace" placeholder="Canaã"></div>
+<div class="full"><label>Contexto histórico</label><textarea id="fContext"></textarea></div>
+<div class="full"><label>Reflexão / aplicação</label><textarea id="fReflection"></textarea></div>
+</div><div class="actions"><button type="button" id="cancel">Cancelar</button><button class="primary">Salvar no mapa</button></div></form>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+const cfg=window.MAPA_BIBLICO_CONFIG||{};
+const hasCfg=cfg.url&&cfg.key;
+const sb=hasCfg?supabase.createClient(cfg.url,cfg.key):null;
+let events=[],selected=null,mode='timeline';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+function peopleOf(e){return Array.isArray(e.people)?e.people:[]}
+function filtered(){const q=$('search').value.trim().toLowerCase(),p=$('period').value;return events.filter(e=>(p==='all'||e.period===p)&&(!q||[e.title,e.refs,e.period,e.place,e.context,e.reflection,...peopleOf(e)].join(' ').toLowerCase().includes(q))).sort((a,b)=>String(a.date).localeCompare(String(b.date)));}
+function render(){const d=filtered();$('count').textContent=d.length+' estudo'+(d.length===1?'':'s');if(mode==='timeline')timelineView(d);else peopleView(d);sideView(d)}
+function timelineView(d){$('mainTitle').textContent='Linha do tempo';$('main').innerHTML=d.length?'<div class="timeline">'+d.map(e=>`<article class="event"><div class="card" data-id="${e.id}"><div class="date">${esc(e.date)} · ${esc(e.period)}</div><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div><div class="tags">${peopleOf(e).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}<span class="tag">📍 ${esc(e.place)}</span></div></div></article>`).join('')+'</div>':'<div class="empty">Nenhum estudo encontrado.</div>';document.querySelectorAll('#main [data-id]').forEach(x=>x.onclick=()=>select(x.dataset.id))}
+function peopleView(d){$('mainTitle').textContent='Personagens';const names=[...new Set(d.flatMap(peopleOf))].sort();$('main').innerHTML=names.length?'<div class="people">'+names.map(n=>`<button class="person" data-person="${esc(n)}"><b>${esc(n)}</b><small>${d.filter(e=>peopleOf(e).includes(n)).length} acontecimento(s)</small></button>`).join('')+'</div>':'<div class="empty">Nenhum personagem encontrado.</div>';document.querySelectorAll('#main [data-person]').forEach(x=>x.onclick=()=>showPerson(x.dataset.person,d))}
+function sideView(d){if(selected){const e=events.find(x=>String(x.id)===String(selected));$('side').innerHTML=e?`<div class="detail"><h3>${esc(e.title)}</h3><div class="meta">${esc(e.date)} · ${esc(e.refs)} · ${esc(e.place)}</div><div class="tags">${peopleOf(e).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}</div><div class="section"><b>Contexto histórico</b><p>${esc(e.context||'A preencher')}</p></div><div class="section"><b>Reflexão</b><p>${esc(e.reflection||'A preencher')}</p></div></div>`:'';return}
+const names=[...new Set(d.flatMap(peopleOf))].sort();$('side').innerHTML='<div class="people">'+names.map(n=>`<button class="person" data-side-person="${esc(n)}"><b>${esc(n)}</b><small>${d.filter(e=>peopleOf(e).includes(n)).length} acontecimento(s)</small></button>`).join('')+'</div>';document.querySelectorAll('[data-side-person]').forEach(x=>x.onclick=()=>showPerson(x.dataset.sidePerson,d))}
+function select(id){selected=id;render()}
+function showPerson(name,d){selected=null;const rel=d.filter(e=>peopleOf(e).includes(name));$('mainTitle').textContent=name;$('main').innerHTML=`<div class="detail"><div class="meta">${rel.length} acontecimento(s)</div>${rel.map(e=>`<article class="event" style="margin-top:10px"><div class="card" data-id="${e.id}"><div class="date">${esc(e.date)}</div><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div></div></article>`).join('')}</div>`;document.querySelectorAll('#main [data-id]').forEach(x=>x.onclick=()=>select(x.dataset.id))}
+async function load(){if(!sb){$('status').textContent='Modo de demonstração: configure config.js para ativar o banco compartilhado.';events=seed();render();return}const {data,error}=await sb.from('studies').select('*').order('created_at',{ascending:true});if(error){$('status').textContent='Erro ao carregar. Confira a configuração do Supabase.';events=seed();}else{$('status').textContent='🟢 Banco compartilhado conectado';events=data||[]}render()}
+function seed(){return[{id:1,date:'~1900 a.C.',title:'José é vendido pelos irmãos',period:'Patriarcas',refs:'Gênesis 37:1–36',people:['José','Jacó','Judá'],place:'Canaã → Egito',context:'José é vendido pelos irmãos e levado ao Egito.',reflection:'Como lidar com injustiças e situações que parecem destruir nossos planos?'},{id:2,date:'~1000 a.C.',title:'Davi torna-se rei',period:'Monarquia',refs:'1 Samuel 16 – 2 Samuel 5',people:['Davi','Samuel','Saul'],place:'Israel',context:'Davi passa de pastor escolhido por Samuel a rei.',reflection:'Chamado, caráter, liderança e consequências das escolhas.'}]}
+$('search').oninput=render;$('period').onchange=render;$('timeline').onclick=()=>{mode='timeline';$('timeline').classList.add('primary');$('people').classList.remove('primary');selected=null;render()};$('people').onclick=()=>{mode='people';$('people').classList.add('primary');$('timeline').classList.remove('primary');selected=null;render()};
+$('add').onclick=()=>{$('modal').classList.add('open');$('fTitle').focus()};$('close').onclick=$('cancel').onclick=()=>$('modal').classList.remove('open');
+$('form').onsubmit=async e=>{e.preventDefault();const row={title:$('fTitle').value.trim(),date:$('fDate').value.trim()||'Data não informada',period:$('fPeriod').value,refs:$('fRefs').value.trim()||'Passagem não informada',people:$('fPeople').value.split(',').map(x=>x.trim()).filter(Boolean),place:$('fPlace').value.trim()||'Não informado',context:$('fContext').value.trim(),reflection:$('fReflection').value.trim()};if(!sb){events.push({...row,id:Date.now()});$('status').textContent='Salvo apenas nesta demonstração. Configure o Supabase para compartilhar.'}else{const {error}=await sb.from('studies').insert(row);if(error){alert('Não foi possível salvar: '+error.message);return}await load()}e.target.reset();$('modal').classList.remove('open');selected=null;render()};
+load();
+</script>
+</body>
+</html>
