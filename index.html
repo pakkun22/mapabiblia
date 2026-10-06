@@ -47,7 +47,7 @@ button.small{padding:7px 10px;font-size:12px}.tabs{display:flex;gap:8px;margin-b
     <div class="toolbar">
       <input id="search" class="search" placeholder="Buscar passagem, pessoa, tema ou contexto">
       <select id="period"><option value="all">Todos os períodos</option><option>Patriarcas</option><option>Êxodo</option><option>Juízes</option><option>Monarquia</option><option>Exílio</option><option>Novo Testamento</option></select>
-      <button id="timeline" class="primary">Linha do tempo geral</button><button id="people">Personagens</button>
+      <button id="timeline" class="primary">Linha do tempo geral</button><button id="people">Pessoas</button>
     </div>
     <div class="layout">
       <section class="panel"><div class="titlebar"><h2 id="mainTitle">Linha do tempo geral</h2><span class="count" id="count"></span></div><div id="main"></div></section>
@@ -86,7 +86,7 @@ button.small{padding:7px 10px;font-size:12px}.tabs{display:flex;gap:8px;margin-b
     <div><label>Ano para ordenar</label><input id="fYear" type="number" placeholder="Ex.: -1900 (a.C.) ou 30 (d.C.)"></div>
     <div><label>Período</label><select id="fPeriod"><option>Patriarcas</option><option>Êxodo</option><option>Juízes</option><option>Monarquia</option><option>Exílio</option><option>Novo Testamento</option></select></div>
     <div><label>Passagem</label><input id="fRefs" placeholder="Gênesis 37:1–36"></div>
-    <div><label>Personagens</label><input id="fPeople" placeholder="José, Jacó, Judá"></div>
+    <div><label>Pessoas</label><input id="fPeople" placeholder="José, Jacó, Judá"></div>
     <div><label>Local</label><input id="fPlace" placeholder="Canaã"></div>
     <div class="full"><label>Contexto histórico</label><textarea id="fContext"></textarea></div>
     <div class="full"><label>Reflexão / aplicação</label><textarea id="fReflection"></textarea></div>
@@ -118,7 +118,7 @@ function filtered(){const q=$('search').value.trim().toLowerCase(),p=$('period')
 }
 function render(){const d=filtered();$('count').textContent=d.length+' estudo'+(d.length===1?'':'s');if(mode==='timeline')timelineView(d);else peopleView(d);sideView(d)}
 function timelineView(d){$('mainTitle').textContent='Linha do tempo geral';$('main').innerHTML=d.length?'<div class="timeline">'+d.map(e=>`<article class="event"><div class="card" data-id="${e.id}"><div class="date">${esc(e.date)} · ${esc(e.period)}</div><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div><div class="tags">${peopleOf(e).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}<span class="tag">📍 ${esc(e.place)}</span></div></div></article>`).join('')+'</div>':'<div class="empty">Nenhum estudo encontrado.</div>';document.querySelectorAll('#main [data-id]').forEach(x=>x.onclick=()=>select(x.dataset.id))}
-function peopleView(d){$('mainTitle').textContent='Personagens';const names=[...new Set(d.flatMap(peopleOf))].sort();$('main').innerHTML=names.length?'<div class="people">'+names.map(n=>`<button class="person" data-person="${esc(n)}"><b>${esc(n)}</b><small>${d.filter(e=>peopleOf(e).includes(n)).length} acontecimento(s)</small></button>`).join('')+'</div>':'<div class="empty">Nenhum personagem encontrado.</div>';document.querySelectorAll('#main [data-person]').forEach(x=>x.onclick=()=>showPerson(x.dataset.person,d))}
+function peopleView(d){$('mainTitle').textContent='Pessoas';const names=[...new Set(d.flatMap(peopleOf))].sort();$('main').innerHTML=names.length?'<div class="people">'+names.map(n=>`<button class="person" data-person="${esc(n)}"><b>${esc(n)}</b><small>${d.filter(e=>peopleOf(e).includes(n)).length} acontecimento(s)</small></button>`).join('')+'</div>':'<div class="empty">Nenhum pessoa encontrado.</div>';document.querySelectorAll('#main [data-person]').forEach(x=>x.onclick=()=>showPerson(x.dataset.person,d))}
 function sideView(d){if(selected){const e=events.find(x=>String(x.id)===String(selected));$('side').innerHTML=e?`<div class="detail"><h3>${esc(e.title)}</h3><div class="meta">${esc(e.date)} · ${esc(e.refs)} · ${esc(e.place)}</div><div class="tags">${peopleOf(e).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}</div><div class="section"><b>Contexto histórico</b><p>${esc(e.context||'A preencher')}</p></div><div class="section"><b>Reflexão</b><p>${esc(e.reflection||'A preencher')}</p></div></div>`:'';return}
  const names=[...new Set(d.flatMap(peopleOf))].sort();$('side').innerHTML='<div class="people">'+names.map(n=>`<button class="person" data-side-person="${esc(n)}"><b>${esc(n)}</b><small>${d.filter(e=>peopleOf(e).includes(n)).length} acontecimento(s)</small></button>`).join('')+'</div>';document.querySelectorAll('[data-side-person]').forEach(x=>x.onclick=()=>showPerson(x.dataset.sidePerson,d))}
 function select(id){selected=id;render()}
