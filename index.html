@@ -123,7 +123,8 @@ button.small{padding:7px 10px;font-size:12px}.tabs{display:flex;gap:8px;margin-b
   <form id="form"><div class="form">
     <div class="full"><label>Título</label><input id="fTitle" required placeholder="Ex.: José é vendido pelos irmãos"></div>
     <div><label>Data exibida</label><input id="fDate" placeholder="Ex.: ~1900 a.C."></div>
-    <div><label>Ano para ordenar</label><input id="fYear" type="number" placeholder="Ex.: -1900 (a.C.) ou 30 (d.C.)"></div>
+    <div><label>Ano</label><input id="fYear" type="number" min="1" step="1" placeholder="Ex.: 1900"></div>
+    <div><label>Era</label><select id="fEra"><option value="bc">a.C.</option><option value="ad">d.C.</option></select><div class="status" style="margin-top:5px">Não use sinal de menos. O sistema organiza a.C. automaticamente.</div></div>
     <div><label>Período</label><select id="fPeriod"><option>Patriarcas</option><option>Êxodo</option><option>Juízes</option><option>Monarquia</option><option>Exílio</option><option>Novo Testamento</option></select></div>
     <div><label>Passagem</label><input id="fRefs" placeholder="Gênesis 37:1–36"></div>
     <div><label>Pessoas</label><input id="fPeople" placeholder="José, Jacó, Judá"></div>
@@ -162,12 +163,28 @@ let boards=[],selectedBoard=null,boardElements=[],boardTool='select',boardSelect
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 function peopleOf(e){return Array.isArray(e.people)?e.people:[]}
-function yearOf(e){return Number.isFinite(Number(e.sort_year))?Number(e.sort_year):999999}
+function yearOf(e){
+ const raw=Number(e?.sort_year);
+ const date=String(e?.date||'').toLowerCase();
+ const isBC=/(a\.?c\.?|ac|antes de cristo|antes\s+de\s+cristo)/i.test(date);
+ const isAD=/(d\.?c\.?|dc|depois de cristo|depois\s+de\s+cristo)/i.test(date);
+ if(Number.isFinite(raw)){
+   if(isBC && raw>0) return -Math.abs(raw);
+   if(isAD && raw<0) return Math.abs(raw);
+   return raw;
+ }
+ const m=date.match(/(-?\d+(?:[.,]\d+)?)/);
+ if(m){
+   const n=Math.abs(Number(m[1].replace(',','.')));
+   if(Number.isFinite(n)) return isBC ? -n : n;
+ }
+ return 999999;
+}
 function filtered(){const q=$('search').value.trim().toLowerCase(),p=$('period').value;
  return events.filter(e=>(p==='all'||e.period===p)&&(!q||[e.title,e.refs,e.period,e.place,e.context,e.reflection,...peopleOf(e)].join(' ').toLowerCase().includes(q))).sort((a,b)=>yearOf(a)-yearOf(b)||String(a.date).localeCompare(String(b.date)));
 }
 function render(){const d=filtered();$('count').textContent=d.length+' estudo'+(d.length===1?'':'s');if(mode==='timeline')timelineView(d);else peopleView(d);sideView(d)}
-function timelineView(d){$('mainTitle').textContent='Linha do tempo geral';const guide='<div class="directionGuide"><strong>MAIS ANTIGO</strong><span class="arrow">←</span><span>o tempo avança</span><span class="arrow">→</span><strong>MAIS RECENTE</strong></div><div class="timelineAxis"><span>Passado</span><div class="line"></div><span>Presente</span></div>';$('main').innerHTML=d.length?guide+'<div class="timeline">'+d.map(e=>`<article class="event"><div class="card" data-id="${e.id}"><div class="date">${esc(e.date)} · ${esc(e.period)}</div><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div><div class="tags">${peopleOf(e).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}<span class="tag">📍 ${esc(e.place)}</span></div></div></article>`).join('')+'</div>':'<div class="empty">Nenhum estudo encontrado.</div>';document.querySelectorAll('#main [data-id]').forEach(x=>x.onclick=()=>select(x.dataset.id))}
+function timelineView(d){$('mainTitle').textContent='Linha do tempo geral';const guide='<div class="directionGuide"><strong>MAIS ANTIGO</strong><span class="arrow">→</span><span>o tempo avança</span><span class="arrow">→</span><strong>MAIS RECENTE</strong></div><div class="timelineAxis"><span>Passado</span><div class="line"></div><span>Presente</span></div>';$('main').innerHTML=d.length?guide+'<div class="timeline">'+d.map(e=>`<article class="event"><div class="card" data-id="${e.id}"><div class="date">${esc(e.date)} · ${esc(e.period)}</div><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div><div class="tags">${peopleOf(e).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}<span class="tag">📍 ${esc(e.place)}</span></div></div></article>`).join('')+'</div>':'<div class="empty">Nenhum estudo encontrado.</div>';document.querySelectorAll('#main [data-id]').forEach(x=>x.onclick=()=>select(x.dataset.id))}
 function peopleView(d){$('mainTitle').textContent='Pessoas';const names=[...new Set(d.flatMap(peopleOf))].sort();$('main').innerHTML=names.length?'<div class="people">'+names.map(n=>`<button class="person" data-person="${esc(n)}"><b>${esc(n)}</b><small>${d.filter(e=>peopleOf(e).includes(n)).length} acontecimento(s)</small></button>`).join('')+'</div>':'<div class="empty">Nenhum pessoa encontrado.</div>';document.querySelectorAll('#main [data-person]').forEach(x=>x.onclick=()=>showPerson(x.dataset.person,d))}
 function sideView(d){if(selected){const e=events.find(x=>String(x.id)===String(selected));$('side').innerHTML=e?`<div class="detail"><h3>${esc(e.title)}</h3><div class="meta">${esc(e.date)} · ${esc(e.refs)} · ${esc(e.place)}</div><div class="tags">${peopleOf(e).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}</div><div class="section"><b>Contexto histórico</b><p>${esc(e.context||'A preencher')}</p></div><div class="section"><b>Reflexão</b><p>${esc(e.reflection||'A preencher')}</p></div></div>`:'';return}
  const names=[...new Set(d.flatMap(peopleOf))].sort();$('side').innerHTML='<div class="people">'+names.map(n=>`<button class="person" data-side-person="${esc(n)}"><b>${esc(n)}</b><small>${d.filter(e=>peopleOf(e).includes(n)).length} acontecimento(s)</small></button>`).join('')+'</div>';document.querySelectorAll('[data-side-person]').forEach(x=>x.onclick=()=>showPerson(x.dataset.sidePerson,d))}
@@ -200,8 +217,11 @@ $('form').onsubmit=async e=>{
  e.preventDefault();
  if(!sb){alert('Conecte o Supabase antes de salvar.');return}
  const rawYear=$('fYear').value.trim();
- const row={title:$('fTitle').value.trim(),date:$('fDate').value.trim()||'Data não informada',sort_year:rawYear===''?null:Number(rawYear),period:$('fPeriod').value,refs:$('fRefs').value.trim()||'Passagem não informada',people:$('fPeople').value.split(',').map(x=>x.trim()).filter(Boolean),place:$('fPlace').value.trim()||'Não informado',context:$('fContext').value.trim(),reflection:$('fReflection').value.trim()};
- if(row.sort_year!==null&&!Number.isInteger(row.sort_year)){alert('O ano para ordenar deve ser um número inteiro, por exemplo -1900 ou 30.');return}
+ const era=$('fEra').value;
+ const magnitude=rawYear===''?null:Number(rawYear);
+ if(magnitude!==null && (!Number.isInteger(magnitude)||magnitude<1)){alert('Informe apenas um ano inteiro positivo, por exemplo 1900. A era a.C./d.C. é escolhida ao lado.');return}
+ const sortYear=magnitude===null?null:(era==='bc'?-magnitude:magnitude);
+ const row={title:$('fTitle').value.trim(),date:$('fDate').value.trim()||'Data não informada',sort_year:sortYear,period:$('fPeriod').value,refs:$('fRefs').value.trim()||'Passagem não informada',people:$('fPeople').value.split(',').map(x=>x.trim()).filter(Boolean),place:$('fPlace').value.trim()||'Não informado',context:$('fContext').value.trim(),reflection:$('fReflection').value.trim()};
  const {error}=await sb.from('studies').insert(row);if(error){alert('Não foi possível salvar: '+error.message);return}
  e.target.reset();$('modal').classList.remove('open');selected=null;await load();
 };
@@ -257,7 +277,7 @@ async function renderCanvas(){
  if(error){el.innerHTML='<div class="empty">Erro ao carregar os acontecimentos.</div>';return}
  const rows=(data||[]).map(x=>x.studies).filter(Boolean).sort((a,b)=>yearOf(a)-yearOf(b)||String(a.date).localeCompare(String(b.date)));
  if(!rows.length){el.innerHTML='<div class="empty">Essa linha ainda está vazia.<br>Pesquise um estudo ao lado e clique em <b>Adicionar</b>.</div>';return}
- el.innerHTML='<div class="directionGuide"><strong>MAIS ANTIGO</strong><span class="arrow">←</span><span>em a.C., números maiores são mais antigos</span><span class="arrow">→</span><strong>MAIS RECENTE</strong></div><div class="timelineAxis"><span>Mais antigo</span><div class="line"></div><span>Mais recente</span></div><div class="canvasTrack">'+rows.map((e,i)=>`<article class="canvasItem"><div class="canvasDot"></div><div class="canvasCard"><span class="badge">${esc(e.date)}</span><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div><div class="tags">${peopleOf(e).slice(0,3).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}</div></div></article>`).join('')+'</div>';
+ el.innerHTML='<div class="directionGuide"><strong>MAIS ANTIGO</strong><span class="arrow">→</span><span>em a.C., números maiores são mais antigos</span><span class="arrow">→</span><strong>MAIS RECENTE</strong></div><div class="timelineAxis"><span>Mais antigo</span><div class="line"></div><span>Mais recente</span></div><div class="canvasTrack">'+rows.map((e,i)=>`<article class="canvasItem"><div class="canvasDot"></div><div class="canvasCard"><span class="badge">${esc(e.date)}</span><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div><div class="tags">${peopleOf(e).slice(0,3).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}</div></div></article>`).join('')+'</div>';
 }
 
 
