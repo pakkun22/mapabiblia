@@ -5,55 +5,100 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mapa Bíblico</title>
 <style>
-:root{--bg:#f7f7fb;--card:#fff;--text:#182033;--muted:#667085;--line:#e5e7eb;--accent:#6d5dfc;--accent2:#eeecff}
+:root{--bg:#f7f7fb;--card:#fff;--text:#182033;--muted:#667085;--line:#e5e7eb;--accent:#6d5dfc;--accent2:#eeecff;--ok:#12a150}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
-header{background:#fff;border-bottom:1px solid var(--line);padding:18px 16px;position:sticky;top:0;z-index:5}
-.wrap{max-width:1050px;margin:auto}.head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
-h1{font-size:25px;margin:0}.sub{color:var(--muted);font-size:13px;margin:4px 0 0}
+header{background:#fff;border-bottom:1px solid var(--line);padding:18px 16px}.wrap{max-width:1100px;margin:auto}
+.head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}h1{font-size:25px;margin:0}.sub{color:var(--muted);font-size:13px;margin:4px 0 0}
 main{padding:18px 16px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 input,select,textarea,button{font:inherit}input,select,textarea{border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:#fff;color:var(--text)}
 .search{flex:1;min-width:220px}button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 13px;cursor:pointer;font-weight:650}button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.small{padding:7px 10px;font-size:12px}.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .layout{display:grid;grid-template-columns:1.35fr .8fr;gap:14px}.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px}
-.titlebar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}h2{font-size:16px;margin:0}.count{font-size:12px;color:var(--muted)}
+.titlebar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}h2{font-size:16px;margin:0}.count{font-size:12px;color:var(--muted)}
 .timeline{position:relative;padding-left:24px}.timeline:before{content:"";position:absolute;left:8px;top:5px;bottom:5px;width:2px;background:#e2e4eb}
-.event{position:relative;margin-bottom:12px}.event:before{content:"";position:absolute;left:-21px;top:19px;width:9px;height:9px;background:#8b83ff;border:3px solid #f7f7fb;border-radius:50%}
+.event{position:relative;margin-bottom:12px}.event:before{content:"";position:absolute;left:-21px;top:19px;width:9px;height:9px;background:#8b83ff;border:3px solid var(--bg);border-radius:50%}
 .card{border:1px solid var(--line);border-radius:13px;padding:13px;background:#fff;cursor:pointer}.card:hover{border-color:#bdb7ff}
 .date{font-size:12px;color:var(--muted);font-weight:700}.etitle{font-weight:750;margin:3px 0}.refs{font-size:13px;color:#475467}.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.tag{font-size:11px;background:#f2f4f7;border-radius:999px;padding:4px 7px}
 .people{display:grid;grid-template-columns:1fr 1fr;gap:8px}.person{text-align:left}.person small{display:block;color:var(--muted);font-weight:400;margin-top:3px}
 .detail h3{margin:0 0 3px;font-size:19px}.meta{font-size:12px;color:var(--muted)}.section{border-top:1px solid var(--line);margin-top:13px;padding-top:11px}.detail p{line-height:1.55;font-size:14px;color:#344054}
-.empty{text-align:center;color:var(--muted);padding:28px 8px}
-.modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:16px;z-index:20}.modal.open{display:flex}.box{background:#fff;border-radius:18px;padding:18px;max-width:680px;width:100%;max-height:92vh;overflow:auto}.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}label{font-size:12px;font-weight:700;display:block;margin-bottom:5px}textarea{width:100%;min-height:90px}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
-.status{font-size:12px;color:var(--muted);margin-top:7px}
-@media(max-width:760px){.layout{grid-template-columns:1fr}.form{grid-template-columns:1fr}.full{grid-column:auto}.people{grid-template-columns:1fr 1fr}header{position:static}}
+.empty{text-align:center;color:var(--muted);padding:28px 8px}.status{font-size:12px;color:var(--muted);margin-top:7px}
+.studyResult{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:8px}.studyResult .info{min-width:0}.studyResult .info b{display:block}.studyResult .info span{font-size:12px;color:var(--muted)}
+.timelineList{display:grid;gap:8px}.timelineChoice{display:flex;justify-content:space-between;gap:8px;align-items:center;text-align:left;width:100%}.timelineChoice.active{border-color:var(--accent);background:var(--accent2)}
+.builder{margin-bottom:14px}.builderHead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.builderMeta{color:var(--muted);font-size:12px}
+.canvas{overflow-x:auto;padding-bottom:5px}.canvasTrack{display:flex;gap:14px;min-width:max-content;align-items:stretch;padding:15px 4px 18px;position:relative}.canvasTrack:before{content:"";position:absolute;left:10px;right:10px;top:31px;height:3px;background:#ddd;z-index:0}.canvasItem{width:210px;position:relative;z-index:1}.canvasDot{width:14px;height:14px;background:var(--accent);border:3px solid #fff;border-radius:50%;margin:0 auto 10px;box-shadow:0 0 0 2px var(--accent)}.canvasCard{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px;min-height:125px}.canvasCard .date{margin-bottom:4px}
+.badge{display:inline-block;background:#f2f4f7;border-radius:999px;padding:4px 8px;font-size:11px;color:#475467}
+.modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:16px;z-index:20}.modal.open{display:flex}.box{background:#fff;border-radius:18px;padding:18px;max-width:700px;width:100%;max-height:92vh;overflow:auto}.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}label{font-size:12px;font-weight:700;display:block;margin-bottom:5px}textarea{width:100%;min-height:90px}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.form{grid-template-columns:1fr}.full{grid-column:auto}.people{grid-template-columns:1fr 1fr}.studyResult{align-items:flex-start;flex-direction:column}.canvasItem{width:190px}}
 </style>
 </head>
 <body>
-<header><div class="wrap head"><div><h1>🗺️ Mapa Bíblico</h1><div class="sub">Linha do tempo colaborativa do grupo de oração</div></div><button class="primary" id="add">＋ Adicionar estudo</button></div></header>
+<header><div class="wrap head">
+  <div><h1>🗺️ Mapa Bíblico</h1><div class="sub">Explore a Bíblia e monte suas próprias linhas do tempo</div></div>
+  <button class="primary" id="add">＋ Adicionar estudo</button>
+</div></header>
+
 <main class="wrap">
-<div class="toolbar">
-<input id="search" class="search" placeholder="Buscar passagem, pessoa, tema ou contexto">
-<select id="period"><option value="all">Todos os períodos</option><option>Patriarcas</option><option>Êxodo</option><option>Juízes</option><option>Monarquia</option><option>Exílio</option><option>Novo Testamento</option></select>
-<button id="timeline" class="primary">Linha do tempo</button><button id="people">Personagens</button>
-</div>
-<div class="layout">
-<section class="panel"><div class="titlebar"><h2 id="mainTitle">Linha do tempo</h2><span class="count" id="count"></span></div><div id="main"></div></section>
-<aside class="panel"><div class="titlebar"><h2>🔎 Explorar</h2></div><div id="side"></div></aside>
-</div>
-<div class="status" id="status">Conectando ao banco…</div>
+  <div class="tabs">
+    <button id="exploreTab" class="primary">📚 Explorar estudos</button>
+    <button id="myTimelinesTab">🧩 Minhas linhas do tempo</button>
+  </div>
+
+  <section id="exploreSection">
+    <div class="toolbar">
+      <input id="search" class="search" placeholder="Buscar passagem, pessoa, tema ou contexto">
+      <select id="period"><option value="all">Todos os períodos</option><option>Patriarcas</option><option>Êxodo</option><option>Juízes</option><option>Monarquia</option><option>Exílio</option><option>Novo Testamento</option></select>
+      <button id="timeline" class="primary">Linha do tempo geral</button><button id="people">Personagens</button>
+    </div>
+    <div class="layout">
+      <section class="panel"><div class="titlebar"><h2 id="mainTitle">Linha do tempo geral</h2><span class="count" id="count"></span></div><div id="main"></div></section>
+      <aside class="panel"><div class="titlebar"><h2>🔎 Explorar</h2></div><div id="side"></div></aside>
+    </div>
+  </section>
+
+  <section id="timelineSection" style="display:none">
+    <div class="layout">
+      <section class="panel">
+        <div class="titlebar"><h2>🧩 Minhas linhas do tempo</h2><button class="primary small" id="newTimeline">＋ Nova linha</button></div>
+        <div id="timelineList" class="timelineList"></div>
+      </section>
+      <aside class="panel">
+        <div class="titlebar"><h2>🔎 Adicionar estudos</h2></div>
+        <input id="timelineSearch" class="search" style="width:100%;margin-bottom:10px" placeholder="Pesquisar estudo para adicionar">
+        <div id="studyResults"></div>
+      </aside>
+    </div>
+    <section class="panel builder" style="margin-top:14px">
+      <div class="builderHead">
+        <div><h2 id="builderTitle">Selecione uma linha do tempo</h2><div class="builderMeta" id="builderMeta"></div></div>
+      </div>
+      <div id="canvas" class="canvas"><div class="empty">Crie ou selecione uma linha do tempo para começar.</div></div>
+    </section>
+  </section>
+
+  <div class="status" id="status">Conectando ao banco…</div>
 </main>
 
 <div class="modal" id="modal"><div class="box">
-<div class="titlebar"><h2>Novo estudo</h2><button id="close">✕</button></div>
-<form id="form"><div class="form">
-<div class="full"><label>Título</label><input id="fTitle" required placeholder="Ex.: José é vendido pelos irmãos"></div>
-<div><label>Data/período</label><input id="fDate" placeholder="Ex.: ~1900 a.C."></div>
-<div><label>Período</label><select id="fPeriod"><option>Patriarcas</option><option>Êxodo</option><option>Juízes</option><option>Monarquia</option><option>Exílio</option><option>Novo Testamento</option></select></div>
-<div><label>Passagem</label><input id="fRefs" placeholder="Gênesis 37:1–36"></div>
-<div><label>Personagens</label><input id="fPeople" placeholder="José, Jacó, Judá"></div>
-<div><label>Local</label><input id="fPlace" placeholder="Canaã"></div>
-<div class="full"><label>Contexto histórico</label><textarea id="fContext"></textarea></div>
-<div class="full"><label>Reflexão / aplicação</label><textarea id="fReflection"></textarea></div>
-</div><div class="actions"><button type="button" id="cancel">Cancelar</button><button class="primary">Salvar no mapa</button></div></form>
+  <div class="titlebar"><h2 id="modalTitle">Novo estudo</h2><button id="close">✕</button></div>
+  <form id="form"><div class="form">
+    <div class="full"><label>Título</label><input id="fTitle" required placeholder="Ex.: José é vendido pelos irmãos"></div>
+    <div><label>Data exibida</label><input id="fDate" placeholder="Ex.: ~1900 a.C."></div>
+    <div><label>Ano para ordenar</label><input id="fYear" type="number" placeholder="Ex.: -1900 (a.C.) ou 30 (d.C.)"></div>
+    <div><label>Período</label><select id="fPeriod"><option>Patriarcas</option><option>Êxodo</option><option>Juízes</option><option>Monarquia</option><option>Exílio</option><option>Novo Testamento</option></select></div>
+    <div><label>Passagem</label><input id="fRefs" placeholder="Gênesis 37:1–36"></div>
+    <div><label>Personagens</label><input id="fPeople" placeholder="José, Jacó, Judá"></div>
+    <div><label>Local</label><input id="fPlace" placeholder="Canaã"></div>
+    <div class="full"><label>Contexto histórico</label><textarea id="fContext"></textarea></div>
+    <div class="full"><label>Reflexão / aplicação</label><textarea id="fReflection"></textarea></div>
+  </div><div class="actions"><button type="button" id="cancel">Cancelar</button><button class="primary">Salvar no banco</button></div></form>
+</div></div>
+
+<div class="modal" id="timelineModal"><div class="box">
+  <div class="titlebar"><h2>Nova linha do tempo</h2><button id="closeTimeline">✕</button></div>
+  <form id="timelineForm"><div class="form">
+    <div class="full"><label>Nome</label><input id="tName" required placeholder="Ex.: Vida de José"></div>
+    <div class="full"><label>Descrição</label><textarea id="tDescription" placeholder="Ex.: Principais acontecimentos da vida de José."></textarea></div>
+  </div><div class="actions"><button type="button" id="cancelTimeline">Cancelar</button><button class="primary">Criar linha</button></div></form>
 </div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -62,24 +107,111 @@ input,select,textarea,button{font:inherit}input,select,textarea{border:1px solid
 const cfg=window.MAPA_BIBLICO_CONFIG||{};
 const hasCfg=cfg.url&&cfg.key;
 const sb=hasCfg?supabase.createClient(cfg.url,cfg.key):null;
-let events=[],selected=null,mode='timeline';
+let events=[],selected=null,mode='timeline',timelines=[],selectedTimeline=null;
+
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 function peopleOf(e){return Array.isArray(e.people)?e.people:[]}
-function filtered(){const q=$('search').value.trim().toLowerCase(),p=$('period').value;return events.filter(e=>(p==='all'||e.period===p)&&(!q||[e.title,e.refs,e.period,e.place,e.context,e.reflection,...peopleOf(e)].join(' ').toLowerCase().includes(q))).sort((a,b)=>String(a.date).localeCompare(String(b.date)));}
+function yearOf(e){return Number.isFinite(Number(e.sort_year))?Number(e.sort_year):999999}
+function filtered(){const q=$('search').value.trim().toLowerCase(),p=$('period').value;
+ return events.filter(e=>(p==='all'||e.period===p)&&(!q||[e.title,e.refs,e.period,e.place,e.context,e.reflection,...peopleOf(e)].join(' ').toLowerCase().includes(q))).sort((a,b)=>yearOf(a)-yearOf(b)||String(a.date).localeCompare(String(b.date)));
+}
 function render(){const d=filtered();$('count').textContent=d.length+' estudo'+(d.length===1?'':'s');if(mode==='timeline')timelineView(d);else peopleView(d);sideView(d)}
-function timelineView(d){$('mainTitle').textContent='Linha do tempo';$('main').innerHTML=d.length?'<div class="timeline">'+d.map(e=>`<article class="event"><div class="card" data-id="${e.id}"><div class="date">${esc(e.date)} · ${esc(e.period)}</div><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div><div class="tags">${peopleOf(e).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}<span class="tag">📍 ${esc(e.place)}</span></div></div></article>`).join('')+'</div>':'<div class="empty">Nenhum estudo encontrado.</div>';document.querySelectorAll('#main [data-id]').forEach(x=>x.onclick=()=>select(x.dataset.id))}
+function timelineView(d){$('mainTitle').textContent='Linha do tempo geral';$('main').innerHTML=d.length?'<div class="timeline">'+d.map(e=>`<article class="event"><div class="card" data-id="${e.id}"><div class="date">${esc(e.date)} · ${esc(e.period)}</div><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div><div class="tags">${peopleOf(e).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}<span class="tag">📍 ${esc(e.place)}</span></div></div></article>`).join('')+'</div>':'<div class="empty">Nenhum estudo encontrado.</div>';document.querySelectorAll('#main [data-id]').forEach(x=>x.onclick=()=>select(x.dataset.id))}
 function peopleView(d){$('mainTitle').textContent='Personagens';const names=[...new Set(d.flatMap(peopleOf))].sort();$('main').innerHTML=names.length?'<div class="people">'+names.map(n=>`<button class="person" data-person="${esc(n)}"><b>${esc(n)}</b><small>${d.filter(e=>peopleOf(e).includes(n)).length} acontecimento(s)</small></button>`).join('')+'</div>':'<div class="empty">Nenhum personagem encontrado.</div>';document.querySelectorAll('#main [data-person]').forEach(x=>x.onclick=()=>showPerson(x.dataset.person,d))}
 function sideView(d){if(selected){const e=events.find(x=>String(x.id)===String(selected));$('side').innerHTML=e?`<div class="detail"><h3>${esc(e.title)}</h3><div class="meta">${esc(e.date)} · ${esc(e.refs)} · ${esc(e.place)}</div><div class="tags">${peopleOf(e).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}</div><div class="section"><b>Contexto histórico</b><p>${esc(e.context||'A preencher')}</p></div><div class="section"><b>Reflexão</b><p>${esc(e.reflection||'A preencher')}</p></div></div>`:'';return}
-const names=[...new Set(d.flatMap(peopleOf))].sort();$('side').innerHTML='<div class="people">'+names.map(n=>`<button class="person" data-side-person="${esc(n)}"><b>${esc(n)}</b><small>${d.filter(e=>peopleOf(e).includes(n)).length} acontecimento(s)</small></button>`).join('')+'</div>';document.querySelectorAll('[data-side-person]').forEach(x=>x.onclick=()=>showPerson(x.dataset.sidePerson,d))}
+ const names=[...new Set(d.flatMap(peopleOf))].sort();$('side').innerHTML='<div class="people">'+names.map(n=>`<button class="person" data-side-person="${esc(n)}"><b>${esc(n)}</b><small>${d.filter(e=>peopleOf(e).includes(n)).length} acontecimento(s)</small></button>`).join('')+'</div>';document.querySelectorAll('[data-side-person]').forEach(x=>x.onclick=()=>showPerson(x.dataset.sidePerson,d))}
 function select(id){selected=id;render()}
 function showPerson(name,d){selected=null;const rel=d.filter(e=>peopleOf(e).includes(name));$('mainTitle').textContent=name;$('main').innerHTML=`<div class="detail"><div class="meta">${rel.length} acontecimento(s)</div>${rel.map(e=>`<article class="event" style="margin-top:10px"><div class="card" data-id="${e.id}"><div class="date">${esc(e.date)}</div><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div></div></article>`).join('')}</div>`;document.querySelectorAll('#main [data-id]').forEach(x=>x.onclick=()=>select(x.dataset.id))}
-async function load(){if(!sb){$('status').textContent='Modo de demonstração: configure config.js para ativar o banco compartilhado.';events=seed();render();return}const {data,error}=await sb.from('studies').select('*').order('created_at',{ascending:true});if(error){$('status').textContent='Erro ao carregar. Confira a configuração do Supabase.';events=seed();}else{$('status').textContent='🟢 Banco compartilhado conectado';events=data||[]}render()}
-function seed(){return[{id:1,date:'~1900 a.C.',title:'José é vendido pelos irmãos',period:'Patriarcas',refs:'Gênesis 37:1–36',people:['José','Jacó','Judá'],place:'Canaã → Egito',context:'José é vendido pelos irmãos e levado ao Egito.',reflection:'Como lidar com injustiças e situações que parecem destruir nossos planos?'},{id:2,date:'~1000 a.C.',title:'Davi torna-se rei',period:'Monarquia',refs:'1 Samuel 16 – 2 Samuel 5',people:['Davi','Samuel','Saul'],place:'Israel',context:'Davi passa de pastor escolhido por Samuel a rei.',reflection:'Chamado, caráter, liderança e consequências das escolhas.'}]}
-$('search').oninput=render;$('period').onchange=render;$('timeline').onclick=()=>{mode='timeline';$('timeline').classList.add('primary');$('people').classList.remove('primary');selected=null;render()};$('people').onclick=()=>{mode='people';$('people').classList.add('primary');$('timeline').classList.remove('primary');selected=null;render()};
-$('add').onclick=()=>{$('modal').classList.add('open');$('fTitle').focus()};$('close').onclick=$('cancel').onclick=()=>$('modal').classList.remove('open');
-$('form').onsubmit=async e=>{e.preventDefault();const row={title:$('fTitle').value.trim(),date:$('fDate').value.trim()||'Data não informada',period:$('fPeriod').value,refs:$('fRefs').value.trim()||'Passagem não informada',people:$('fPeople').value.split(',').map(x=>x.trim()).filter(Boolean),place:$('fPlace').value.trim()||'Não informado',context:$('fContext').value.trim(),reflection:$('fReflection').value.trim()};if(!sb){events.push({...row,id:Date.now()});$('status').textContent='Salvo apenas nesta demonstração. Configure o Supabase para compartilhar.'}else{const {error}=await sb.from('studies').insert(row);if(error){alert('Não foi possível salvar: '+error.message);return}await load()}e.target.reset();$('modal').classList.remove('open');selected=null;render()};
-load();
+
+async function load(){if(!sb){$('status').textContent='Modo de demonstração: configure config.js.';events=seed();render();return}
+ const {data,error}=await sb.from('studies').select('*').order('sort_year',{ascending:true,nullsFirst:false});
+ if(error){$('status').textContent='Erro ao carregar estudos: '+error.message;events=[]}
+ else{$('status').textContent='🟢 Banco compartilhado conectado';events=data||[]}
+ render();await loadTimelines();
+}
+function seed(){return[
+ {id:1,date:'~1900 a.C.',sort_year:-1900,title:'José é vendido pelos irmãos',period:'Patriarcas',refs:'Gênesis 37:1–36',people:['José','Jacó','Judá'],place:'Canaã → Egito',context:'José é vendido pelos irmãos e levado ao Egito.',reflection:'Como lidar com injustiças e situações que parecem destruir nossos planos?'},
+ {id:2,date:'~1000 a.C.',sort_year:-1000,title:'Davi torna-se rei',period:'Monarquia',refs:'1 Samuel 16 – 2 Samuel 5',people:['Davi','Samuel','Saul'],place:'Israel',context:'Davi passa de pastor escolhido por Samuel a rei.',reflection:'Chamado, caráter, liderança e consequências das escolhas.'}
+]}
+
+$('search').oninput=render;$('period').onchange=render;
+$('timeline').onclick=()=>{mode='timeline';$('timeline').classList.add('primary');$('people').classList.remove('primary');selected=null;render()};
+$('people').onclick=()=>{mode='people';$('people').classList.add('primary');$('timeline').classList.remove('primary');selected=null;render()};
+
+$('exploreTab').onclick=()=>{showSection('explore')};
+$('myTimelinesTab').onclick=()=>{showSection('timelines')};
+function showSection(which){const exp=which==='explore';$('exploreSection').style.display=exp?'block':'none';$('timelineSection').style.display=exp?'none':'block';$('exploreTab').classList.toggle('primary',exp);$('myTimelinesTab').classList.toggle('primary',!exp);if(!exp){renderTimelines();renderStudyResults()}}
+
+$('add').onclick=()=>{$('modal').classList.add('open');$('fTitle').focus()};
+$('close').onclick=$('cancel').onclick=()=>$('modal').classList.remove('open');
+
+$('form').onsubmit=async e=>{
+ e.preventDefault();
+ if(!sb){alert('Conecte o Supabase antes de salvar.');return}
+ const rawYear=$('fYear').value.trim();
+ const row={title:$('fTitle').value.trim(),date:$('fDate').value.trim()||'Data não informada',sort_year:rawYear===''?null:Number(rawYear),period:$('fPeriod').value,refs:$('fRefs').value.trim()||'Passagem não informada',people:$('fPeople').value.split(',').map(x=>x.trim()).filter(Boolean),place:$('fPlace').value.trim()||'Não informado',context:$('fContext').value.trim(),reflection:$('fReflection').value.trim()};
+ if(row.sort_year!==null&&!Number.isInteger(row.sort_year)){alert('O ano para ordenar deve ser um número inteiro, por exemplo -1900 ou 30.');return}
+ const {error}=await sb.from('studies').insert(row);if(error){alert('Não foi possível salvar: '+error.message);return}
+ e.target.reset();$('modal').classList.remove('open');selected=null;await load();
+};
+
+$('newTimeline').onclick=()=>{$('timelineModal').classList.add('open');$('tName').focus()};
+$('closeTimeline').onclick=$('cancelTimeline').onclick=()=>$('timelineModal').classList.remove('open');
+
+$('timelineForm').onsubmit=async e=>{
+ e.preventDefault();if(!sb){alert('Conecte o Supabase antes de criar linhas.');return}
+ const row={name:$('tName').value.trim(),description:$('tDescription').value.trim()};
+ const {data,error}=await sb.from('timelines').insert(row).select().single();
+ if(error){alert('Não foi possível criar a linha: '+error.message);return}
+ e.target.reset();$('timelineModal').classList.remove('open');selectedTimeline=data;await loadTimelines();showSection('timelines');
+};
+
+async function loadTimelines(){
+ if(!sb){timelines=[];renderTimelines();return}
+ const {data,error}=await sb.from('timelines').select('*').order('created_at',{ascending:true});
+ if(error){$('status').textContent='Erro ao carregar linhas do tempo: '+error.message;return}
+ timelines=data||[];if(selectedTimeline&&!timelines.some(x=>x.id===selectedTimeline.id))selectedTimeline=null;
+ renderTimelines();renderStudyResults();if(selectedTimeline)await renderCanvas();
+}
+function renderTimelines(){
+ const el=$('timelineList');if(!el)return;
+ if(!timelines.length){el.innerHTML='<div class="empty">Nenhuma linha criada ainda.<br><br>Clique em <b>＋ Nova linha</b> para começar.</div>';return}
+ el.innerHTML=timelines.map(t=>`<button class="timelineChoice ${selectedTimeline&&selectedTimeline.id===t.id?'active':''}" data-tid="${t.id}"><span><b>${esc(t.name)}</b><small style="display:block;color:var(--muted);margin-top:3px">${esc(t.description||'Sem descrição')}</small></span><span>›</span></button>`).join('');
+ el.querySelectorAll('[data-tid]').forEach(b=>b.onclick=async()=>{selectedTimeline=timelines.find(t=>String(t.id)===String(b.dataset.tid));renderTimelines();await renderCanvas()});
+}
+function renderStudyResults(){
+ const el=$('studyResults');if(!el)return;
+ const q=($('timelineSearch')?.value||'').trim().toLowerCase();
+ const list=events.filter(e=>!q||[e.title,e.date,e.refs,e.period,e.place,...peopleOf(e)].join(' ').toLowerCase().includes(q)).sort((a,b)=>yearOf(a)-yearOf(b)).slice(0,30);
+ if(!selectedTimeline){el.innerHTML='<div class="empty">Selecione uma linha do tempo primeiro.</div>';return}
+ el.innerHTML=list.length?list.map(e=>`<div class="studyResult"><div class="info"><b>${esc(e.title)}</b><span>${esc(e.date)} · ${esc(e.refs)}</span></div><button class="small primary" data-add-study="${e.id}">Adicionar</button></div>`).join(''):'<div class="empty">Nenhum estudo encontrado.</div>';
+ el.querySelectorAll('[data-add-study]').forEach(b=>b.onclick=()=>addStudyToTimeline(b.dataset.addStudy));
+}
+$('timelineSearch').oninput=renderStudyResults;
+
+async function addStudyToTimeline(studyId){
+ if(!sb||!selectedTimeline)return;
+ const {data:existing}=await sb.from('timeline_items').select('id').eq('timeline_id',selectedTimeline.id).eq('study_id',studyId).maybeSingle();
+ if(existing){alert('Esse estudo já está nessa linha do tempo.');return}
+ const {data:maxRows}=await sb.from('timeline_items').select('position').eq('timeline_id',selectedTimeline.id).order('position',{ascending:false}).limit(1);
+ const next=(maxRows&&maxRows.length?Number(maxRows[0].position)+1:1);
+ const {error}=await sb.from('timeline_items').insert({timeline_id:selectedTimeline.id,study_id:studyId,position:next});
+ if(error){alert('Não foi possível adicionar: '+error.message);return}
+ await renderCanvas();
+}
+async function renderCanvas(){
+ const el=$('canvas');if(!selectedTimeline){el.innerHTML='<div class="empty">Crie ou selecione uma linha do tempo para começar.</div>';return}
+ $('builderTitle').textContent=selectedTimeline.name;$('builderMeta').textContent=selectedTimeline.description||'';
+ const {data,error}=await sb.from('timeline_items').select('id,position,studies(*)').eq('timeline_id',selectedTimeline.id).order('position',{ascending:true});
+ if(error){el.innerHTML='<div class="empty">Erro ao carregar os acontecimentos.</div>';return}
+ const rows=(data||[]).map(x=>x.studies).filter(Boolean).sort((a,b)=>yearOf(a)-yearOf(b)||String(a.date).localeCompare(String(b.date)));
+ if(!rows.length){el.innerHTML='<div class="empty">Essa linha ainda está vazia.<br>Pesquise um estudo ao lado e clique em <b>Adicionar</b>.</div>';return}
+ el.innerHTML='<div class="canvasTrack">'+rows.map((e,i)=>`<article class="canvasItem"><div class="canvasDot"></div><div class="canvasCard"><span class="badge">${esc(e.date)}</span><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div><div class="tags">${peopleOf(e).slice(0,3).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}</div></div></article>`).join('')+'</div>';
+}
+
+async function init(){await load()}
+init();
 </script>
 </body>
 </html>
