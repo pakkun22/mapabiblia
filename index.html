@@ -29,6 +29,26 @@ button.small{padding:7px 10px;font-size:12px}.tabs{display:flex;gap:8px;margin-b
 .badge{display:inline-block;background:#f2f4f7;border-radius:999px;padding:4px 8px;font-size:11px;color:#475467}
 .modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:16px;z-index:20}.modal.open{display:flex}.box{background:#fff;border-radius:18px;padding:18px;max-width:700px;width:100%;max-height:92vh;overflow:auto}.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}label{font-size:12px;font-weight:700;display:block;margin-bottom:5px}textarea{width:100%;min-height:90px}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 @media(max-width:760px){.layout{grid-template-columns:1fr}.form{grid-template-columns:1fr}.full{grid-column:auto}.people{grid-template-columns:1fr 1fr}.studyResult{align-items:flex-start;flex-direction:column}.canvasItem{width:190px}}
+
+.whiteboardPanel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px}
+.whiteboardTools{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.whiteboardTools button.active{background:var(--accent2);border-color:var(--accent);color:var(--text)}
+.boardShell{border:1px solid var(--line);border-radius:14px;overflow:auto;background:#f8f9fc}
+.boardStage{position:relative;width:1800px;height:1050px;background-image:linear-gradient(#e9ebf1 1px,transparent 1px),linear-gradient(90deg,#e9ebf1 1px,transparent 1px);background-size:24px 24px}
+.boardSvg{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.boardElement{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;cursor:move;user-select:none;padding:10px;border:2px solid #667085;background:#fff;color:#182033;min-width:70px;min-height:45px;z-index:2}
+.boardElement.selected{outline:3px solid #8b83ff;outline-offset:2px}
+.boardElement.circle{border-radius:50%;width:130px;height:90px}
+.boardElement.rectangle{border-radius:12px;width:160px;height:85px}
+.boardElement.triangle{width:150px;height:120px;border:0;background:#fff;clip-path:polygon(50% 0,100% 100%,0 100%);padding:28px 22px 10px}
+.boardElement.text{border-style:dashed;background:transparent;border-color:#98a2b3}
+.boardToolbarSpacer{flex:1}.boardSelect{min-width:220px}
+.directionGuide{display:flex;justify-content:center;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:0 0 10px}
+.directionGuide .arrow{font-size:20px;color:var(--accent);font-weight:800}
+.timelineAxis{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin:0 0 8px}
+.timelineAxis .line{height:3px;flex:1;background:linear-gradient(90deg,#c8cad3,#8b83ff,#c8cad3);position:relative}
+.timelineAxis .line:after{content:"➜";position:absolute;right:-2px;top:-11px;color:#6d5dfc;font-size:18px}
+.boardHint{font-size:12px;color:var(--muted);margin:0 0 10px}
 </style>
 </head>
 <body>
@@ -40,7 +60,7 @@ button.small{padding:7px 10px;font-size:12px}.tabs{display:flex;gap:8px;margin-b
 <main class="wrap">
   <div class="tabs">
     <button id="exploreTab" class="primary">📚 Explorar estudos</button>
-    <button id="myTimelinesTab">🧩 Minhas linhas do tempo</button>
+    <button id="myTimelinesTab">🧩 Minhas linhas do tempo</button><button id="boardTab">🧠 Quadro colaborativo</button>
   </div>
 
   <section id="exploreSection">
@@ -75,6 +95,26 @@ button.small{padding:7px 10px;font-size:12px}.tabs{display:flex;gap:8px;margin-b
     </section>
   </section>
 
+
+  <section id="boardSection" style="display:none">
+    <section class="whiteboardPanel">
+      <div class="titlebar"><div><h2>🧠 Quadro colaborativo</h2><div class="builderMeta">Um quadro livre para mapas mentais, discussões e ideias.</div></div><button class="primary small" id="newBoard">＋ Novo quadro</button></div>
+      <div class="whiteboardTools">
+        <select id="boardSelect" class="boardSelect"></select>
+        <button type="button" data-tool="select" class="active">↖ Selecionar</button>
+        <button type="button" data-tool="rectangle">▭ Retângulo</button>
+        <button type="button" data-tool="circle">○ Círculo</button>
+        <button type="button" data-tool="triangle">△ Triângulo</button>
+        <button type="button" data-tool="text">T Texto</button>
+        <button type="button" data-tool="connect">↗ Conectar</button>
+        <button type="button" id="deleteBoardElement">🗑 Excluir</button>
+        <span class="boardToolbarSpacer"></span><span id="boardPresence" class="builderMeta">Colaboração ativa</span>
+      </div>
+      <p class="boardHint">Crie formas e arraste-as. No modo <b>Conectar</b>, clique em dois elementos para criar uma seta. Tudo é salvo no banco compartilhado.</p>
+      <div class="boardShell"><div id="boardStage" class="boardStage"><svg id="boardSvg" class="boardSvg" width="1800" height="1050"></svg><div id="boardElements"></div></div></div>
+    </section>
+  </section>
+
   <div class="status" id="status">Conectando ao banco…</div>
 </main>
 
@@ -101,6 +141,15 @@ button.small{padding:7px 10px;font-size:12px}.tabs{display:flex;gap:8px;margin-b
   </div><div class="actions"><button type="button" id="cancelTimeline">Cancelar</button><button class="primary">Criar linha</button></div></form>
 </div></div>
 
+
+<div class="modal" id="boardModal"><div class="box">
+  <div class="titlebar"><h2>Novo quadro</h2><button id="closeBoard">✕</button></div>
+  <form id="boardForm"><div class="form">
+    <div class="full"><label>Nome</label><input id="bName" required placeholder="Ex.: Estudo de Romanos"></div>
+    <div class="full"><label>Descrição</label><textarea id="bDescription" placeholder="Ex.: Ideias e conexões para discutir no grupo."></textarea></div>
+  </div><div class="actions"><button type="button" id="cancelBoard">Cancelar</button><button class="primary">Criar quadro</button></div></form>
+</div></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script>
@@ -108,6 +157,7 @@ const cfg=window.MAPA_BIBLICO_CONFIG||{};
 const hasCfg=cfg.url&&cfg.key;
 const sb=hasCfg?supabase.createClient(cfg.url,cfg.key):null;
 let events=[],selected=null,mode='timeline',timelines=[],selectedTimeline=null;
+let boards=[],selectedBoard=null,boardElements=[],boardTool='select',boardSelectedId=null,connectFrom=null,boardChannel=null;
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
@@ -117,7 +167,7 @@ function filtered(){const q=$('search').value.trim().toLowerCase(),p=$('period')
  return events.filter(e=>(p==='all'||e.period===p)&&(!q||[e.title,e.refs,e.period,e.place,e.context,e.reflection,...peopleOf(e)].join(' ').toLowerCase().includes(q))).sort((a,b)=>yearOf(a)-yearOf(b)||String(a.date).localeCompare(String(b.date)));
 }
 function render(){const d=filtered();$('count').textContent=d.length+' estudo'+(d.length===1?'':'s');if(mode==='timeline')timelineView(d);else peopleView(d);sideView(d)}
-function timelineView(d){$('mainTitle').textContent='Linha do tempo geral';$('main').innerHTML=d.length?'<div class="timeline">'+d.map(e=>`<article class="event"><div class="card" data-id="${e.id}"><div class="date">${esc(e.date)} · ${esc(e.period)}</div><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div><div class="tags">${peopleOf(e).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}<span class="tag">📍 ${esc(e.place)}</span></div></div></article>`).join('')+'</div>':'<div class="empty">Nenhum estudo encontrado.</div>';document.querySelectorAll('#main [data-id]').forEach(x=>x.onclick=()=>select(x.dataset.id))}
+function timelineView(d){$('mainTitle').textContent='Linha do tempo geral';const guide='<div class="directionGuide"><strong>MAIS ANTIGO</strong><span class="arrow">←</span><span>o tempo avança</span><span class="arrow">→</span><strong>MAIS RECENTE</strong></div><div class="timelineAxis"><span>Passado</span><div class="line"></div><span>Presente</span></div>';$('main').innerHTML=d.length?guide+'<div class="timeline">'+d.map(e=>`<article class="event"><div class="card" data-id="${e.id}"><div class="date">${esc(e.date)} · ${esc(e.period)}</div><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div><div class="tags">${peopleOf(e).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}<span class="tag">📍 ${esc(e.place)}</span></div></div></article>`).join('')+'</div>':'<div class="empty">Nenhum estudo encontrado.</div>';document.querySelectorAll('#main [data-id]').forEach(x=>x.onclick=()=>select(x.dataset.id))}
 function peopleView(d){$('mainTitle').textContent='Pessoas';const names=[...new Set(d.flatMap(peopleOf))].sort();$('main').innerHTML=names.length?'<div class="people">'+names.map(n=>`<button class="person" data-person="${esc(n)}"><b>${esc(n)}</b><small>${d.filter(e=>peopleOf(e).includes(n)).length} acontecimento(s)</small></button>`).join('')+'</div>':'<div class="empty">Nenhum pessoa encontrado.</div>';document.querySelectorAll('#main [data-person]').forEach(x=>x.onclick=()=>showPerson(x.dataset.person,d))}
 function sideView(d){if(selected){const e=events.find(x=>String(x.id)===String(selected));$('side').innerHTML=e?`<div class="detail"><h3>${esc(e.title)}</h3><div class="meta">${esc(e.date)} · ${esc(e.refs)} · ${esc(e.place)}</div><div class="tags">${peopleOf(e).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}</div><div class="section"><b>Contexto histórico</b><p>${esc(e.context||'A preencher')}</p></div><div class="section"><b>Reflexão</b><p>${esc(e.reflection||'A preencher')}</p></div></div>`:'';return}
  const names=[...new Set(d.flatMap(peopleOf))].sort();$('side').innerHTML='<div class="people">'+names.map(n=>`<button class="person" data-side-person="${esc(n)}"><b>${esc(n)}</b><small>${d.filter(e=>peopleOf(e).includes(n)).length} acontecimento(s)</small></button>`).join('')+'</div>';document.querySelectorAll('[data-side-person]').forEach(x=>x.onclick=()=>showPerson(x.dataset.sidePerson,d))}
@@ -141,7 +191,7 @@ $('people').onclick=()=>{mode='people';$('people').classList.add('primary');$('t
 
 $('exploreTab').onclick=()=>{showSection('explore')};
 $('myTimelinesTab').onclick=()=>{showSection('timelines')};
-function showSection(which){const exp=which==='explore';$('exploreSection').style.display=exp?'block':'none';$('timelineSection').style.display=exp?'none':'block';$('exploreTab').classList.toggle('primary',exp);$('myTimelinesTab').classList.toggle('primary',!exp);if(!exp){renderTimelines();renderStudyResults()}}
+function showSection(which){const exp=which==='explore',tl=which==='timelines',bd=which==='board';$('exploreSection').style.display=exp?'block':'none';$('timelineSection').style.display=tl?'block':'none';$('boardSection').style.display=bd?'block':'none';$('exploreTab').classList.toggle('primary',exp);$('myTimelinesTab').classList.toggle('primary',tl);$('boardTab').classList.toggle('primary',bd);if(tl){renderTimelines();renderStudyResults()}if(bd){loadBoards()}}
 
 $('add').onclick=()=>{$('modal').classList.add('open');$('fTitle').focus()};
 $('close').onclick=$('cancel').onclick=()=>$('modal').classList.remove('open');
@@ -207,9 +257,103 @@ async function renderCanvas(){
  if(error){el.innerHTML='<div class="empty">Erro ao carregar os acontecimentos.</div>';return}
  const rows=(data||[]).map(x=>x.studies).filter(Boolean).sort((a,b)=>yearOf(a)-yearOf(b)||String(a.date).localeCompare(String(b.date)));
  if(!rows.length){el.innerHTML='<div class="empty">Essa linha ainda está vazia.<br>Pesquise um estudo ao lado e clique em <b>Adicionar</b>.</div>';return}
- el.innerHTML='<div class="canvasTrack">'+rows.map((e,i)=>`<article class="canvasItem"><div class="canvasDot"></div><div class="canvasCard"><span class="badge">${esc(e.date)}</span><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div><div class="tags">${peopleOf(e).slice(0,3).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}</div></div></article>`).join('')+'</div>';
+ el.innerHTML='<div class="directionGuide"><strong>MAIS ANTIGO</strong><span class="arrow">←</span><span>em a.C., números maiores são mais antigos</span><span class="arrow">→</span><strong>MAIS RECENTE</strong></div><div class="timelineAxis"><span>Mais antigo</span><div class="line"></div><span>Mais recente</span></div><div class="canvasTrack">'+rows.map((e,i)=>`<article class="canvasItem"><div class="canvasDot"></div><div class="canvasCard"><span class="badge">${esc(e.date)}</span><div class="etitle">${esc(e.title)}</div><div class="refs">📖 ${esc(e.refs)}</div><div class="tags">${peopleOf(e).slice(0,3).map(p=>`<span class="tag">${esc(p)}</span>`).join('')}</div></div></article>`).join('')+'</div>';
 }
 
+
+function boardShapeStyle(el){return `left:${Number(el.x)||0}px;top:${Number(el.y)||0}px;width:${Number(el.width)||160}px;height:${Number(el.height)||85}px`}
+function boardCenter(el){return {x:(Number(el.x)||0)+(Number(el.width)||160)/2,y:(Number(el.y)||0)+(Number(el.height)||85)/2}}
+function renderBoard(){
+ const wrap=$('boardElements'),svg=$('boardSvg');if(!wrap||!svg)return;
+ wrap.innerHTML='';svg.innerHTML='';
+ const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+ const marker=document.createElementNS('http://www.w3.org/2000/svg','marker');
+ marker.setAttribute('id','arrow');marker.setAttribute('markerWidth','10');marker.setAttribute('markerHeight','10');marker.setAttribute('refX','9');marker.setAttribute('refY','3');marker.setAttribute('orient','auto');marker.setAttribute('markerUnits','strokeWidth');
+ const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d','M0,0 L0,6 L9,3 z');path.setAttribute('fill','#667085');marker.appendChild(path);defs.appendChild(marker);svg.appendChild(defs);
+ boardElements.filter(e=>e.type==='connector').forEach(c=>{
+   const a=boardElements.find(e=>String(e.id)===String(c.source_id)),b=boardElements.find(e=>String(e.id)===String(c.target_id));if(!a||!b)return;
+   const p1=boardCenter(a),p2=boardCenter(b);const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+   line.setAttribute('x1',p1.x);line.setAttribute('y1',p1.y);line.setAttribute('x2',p2.x);line.setAttribute('y2',p2.y);line.setAttribute('stroke','#667085');line.setAttribute('stroke-width','3');line.setAttribute('marker-end','url(#arrow)');svg.appendChild(line);
+ });
+ boardElements.filter(e=>e.type!=='connector').forEach(el=>{
+   const d=document.createElement('div');d.className='boardElement '+(el.shape||'rectangle')+(String(el.id)===String(boardSelectedId)?' selected':'');
+   d.dataset.id=el.id;d.style.cssText=boardShapeStyle(el);d.textContent=el.text||'';
+   d.addEventListener('pointerdown',e=>startBoardDrag(e,el));
+   d.addEventListener('click',e=>{e.stopPropagation();handleBoardClick(el.id)});
+   d.addEventListener('dblclick',()=>editBoardText(el));wrap.appendChild(d);
+ });
+}
+function handleBoardClick(id){
+ if(boardTool==='connect'){
+   if(!connectFrom){connectFrom=id;boardSelectedId=id;renderBoard();$('boardPresence').textContent='Agora clique no segundo elemento para conectar.';return}
+   if(String(connectFrom)===String(id)){connectFrom=null;$('boardPresence').textContent='Modo conectar ativo.';return}
+   createConnector(connectFrom,id);connectFrom=null;return
+ }
+ boardSelectedId=id;renderBoard();
+}
+async function editBoardText(el){const value=prompt('Texto do elemento:',el.text||'');if(value===null)return;await updateBoardElement(el.id,{text:value})}
+function startBoardDrag(ev,el){
+ if(boardTool!=='select')return;ev.stopPropagation();boardSelectedId=el.id;renderBoard();
+ const sx=ev.clientX,sy=ev.clientY,ox=Number(el.x)||0,oy=Number(el.y)||0;
+ const move=e=>{el.x=Math.max(0,Math.min(1800-(Number(el.width)||160),ox+e.clientX-sx));el.y=Math.max(0,Math.min(1050-(Number(el.height)||85),oy+e.clientY-sy));renderBoard()};
+ const up=async()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);await updateBoardElement(el.id,{x:el.x,y:el.y})};
+ window.addEventListener('pointermove',move);window.addEventListener('pointerup',up);
+}
+async function createBoardElement(shape){
+ if(!sb||!selectedBoard)return;const count=boardElements.filter(e=>e.type!=='connector').length;
+ const row={board_id:selectedBoard.id,type:'shape',shape,x:80+(count%5)*250,y:90+Math.floor(count/5)*180,width:shape==='circle'?130:shape==='triangle'?150:shape==='text'?190:160,height:shape==='circle'?90:shape==='triangle'?120:shape==='text'?60:85,text:shape==='text'?'Novo texto':''};
+ const {error}=await sb.from('board_elements').insert(row);if(error)alert('Não foi possível criar o elemento: '+error.message);
+}
+async function createConnector(a,b){
+ if(!sb||!selectedBoard)return;
+ const {error}=await sb.from('board_elements').insert({board_id:selectedBoard.id,type:'connector',shape:'connector',source_id:a,target_id:b,x:0,y:0,width:0,height:0,text:''});
+ if(error)alert('Não foi possível conectar: '+error.message);
+}
+async function updateBoardElement(id,patch){if(!sb)return;const {error}=await sb.from('board_elements').update(patch).eq('id',id);if(error)alert('Não foi possível atualizar: '+error.message)}
+async function deleteSelectedBoardElement(){
+ if(!sb||!boardSelectedId)return;const id=boardSelectedId;
+ const {error}=await sb.from('board_elements').delete().eq('id',id);
+ if(error){alert('Não foi possível excluir: '+error.message);return}boardSelectedId=null;
+}
+async function loadBoards(){
+ if(!sb){$('boardPresence').textContent='Configure o Supabase para usar o quadro.';return}
+ const {data,error}=await sb.from('boards').select('*').order('created_at',{ascending:true});
+ if(error){$('boardPresence').textContent='Erro ao carregar quadros: '+error.message;return}
+ boards=data||[];if(selectedBoard&&!boards.some(b=>String(b.id)===String(selectedBoard.id)))selectedBoard=null;
+ renderBoardSelect();if(!selectedBoard&&boards[0])selectedBoard=boards[0];if(selectedBoard)await loadBoardElements();subscribeBoard();
+}
+function renderBoardSelect(){
+ const el=$('boardSelect');if(!boards.length){el.innerHTML='<option value="">Nenhum quadro criado</option>';return}
+ el.innerHTML=boards.map(b=>`<option value="${b.id}" ${selectedBoard&&String(selectedBoard.id)===String(b.id)?'selected':''}>${esc(b.name)}</option>`).join('');
+}
+async function loadBoardElements(){
+ if(!sb||!selectedBoard)return;const {data,error}=await sb.from('board_elements').select('*').eq('board_id',selectedBoard.id).order('created_at',{ascending:true});
+ if(error){$('boardPresence').textContent='Erro ao carregar elementos: '+error.message;return}
+ boardElements=data||[];boardSelectedId=null;connectFrom=null;renderBoard();
+}
+function subscribeBoard(){
+ if(!sb||!selectedBoard)return;if(boardChannel){sb.removeChannel(boardChannel);boardChannel=null}
+ boardChannel=sb.channel('board-'+selectedBoard.id).on('postgres_changes',{event:'*',schema:'public',table:'board_elements',filter:'board_id=eq.'+selectedBoard.id},()=>loadBoardElements()).subscribe(status=>{
+   $('boardPresence').textContent=status==='SUBSCRIBED'?'🟢 Colaboração em tempo real ativa':'Conectando colaboração…';
+ });
+}
+$('boardTab').onclick=()=>showSection('board');
+$('boardSelect').onchange=async e=>{selectedBoard=boards.find(b=>String(b.id)===String(e.target.value));await loadBoardElements();subscribeBoard()};
+$('newBoard').onclick=()=>{$('boardModal').classList.add('open');$('bName').focus()};
+$('closeBoard').onclick=$('cancelBoard').onclick=()=>$('boardModal').classList.remove('open');
+$('boardForm').onsubmit=async e=>{
+ e.preventDefault();if(!sb){alert('Conecte o Supabase antes de criar quadros.');return}
+ const {data,error}=await sb.from('boards').insert({name:$('bName').value.trim(),description:$('bDescription').value.trim()}).select().single();
+ if(error){alert('Não foi possível criar o quadro: '+error.message);return}
+ e.target.reset();$('boardModal').classList.remove('open');selectedBoard=data;await loadBoards();
+};
+document.querySelectorAll('[data-tool]').forEach(btn=>btn.onclick=()=>{
+ boardTool=btn.dataset.tool;connectFrom=null;document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('active',x===btn));
+ $('boardPresence').textContent=boardTool==='connect'?'Modo conectar: clique no primeiro e depois no segundo elemento.':'Ferramenta selecionada: '+btn.textContent.trim();
+ if(boardTool!=='select'&&['rectangle','circle','triangle','text'].includes(boardTool))createBoardElement(boardTool);
+});
+$('deleteBoardElement').onclick=deleteSelectedBoardElement;
+$('boardStage').addEventListener('click',e=>{if(e.target.id==='boardStage'&&boardTool==='select'){boardSelectedId=null;renderBoard()}});
 async function init(){await load()}
 init();
 </script>
