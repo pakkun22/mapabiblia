@@ -26,5 +26,13 @@ on public.studies for insert
 to anon, authenticated
 with check (true);
 
--- Opcional: permitir edição/exclusão futura. Por enquanto deixamos
--- apenas leitura + criação para evitar que alguém apague o trabalho do grupo.
+drop policy if exists "public_update_studies" on public.studies;
+grant update on table public.studies to anon, authenticated;
+create policy "public_update_studies"
+on public.studies for update
+to anon, authenticated
+using (true)
+with check (true);
+
+-- A política pública deixa qualquer visitante criar, ler e atualizar estudos.
+-- Não envie uma chave service_role ao navegador.

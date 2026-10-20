@@ -12,13 +12,14 @@ Este pacote contém o `index.html` atualizado e uma instrução SQL separada par
 ## 2. Liberar atualização no Supabase
 
 1. Abra o projeto Supabase usado pelo mapa e entre em **SQL Editor**.
-2. Cole o conteúdo de `supabase-update-policy.sql` e execute.
+2. Cole o conteúdo de `supabase-update-policy.sql` e execute. O `supabase.sql` da raiz também foi atualizado e pode ser usado para configurar o banco completo; ele não apaga os estudos existentes.
 3. A política existente de leitura precisa continuar ativa para carregar os estudos. A política nova permite `UPDATE` para `anon` e `authenticated`, conforme o modelo público colaborativo do app.
 
 ## O que mudou
 
 - O painel de detalhes do estudo agora mostra **Editar estudo**.
 - O formulário abre preenchido com os valores atuais e salva usando `UPDATE ... WHERE id = ...`, preservando a linha existente.
+- O site agora verifica se uma linha realmente foi atualizada e avisa quando a política do Supabase ainda não permite a operação.
 - O formulário de adicionar continua inserindo novos estudos.
 - A ordenação da linha do tempo interpreta anos `a.C.` e `d.C.` numericamente; datas sem ano reconhecível usam ordenação textual como alternativa.
 
